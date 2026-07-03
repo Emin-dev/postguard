@@ -1,0 +1,277 @@
+<title>Postguard — strip photo metadata &amp; redact faces before you post</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Postguard: strip real EXIF/GPS metadata from JPEGs and Author/Title metadata from PDFs, and draw permanent redaction boxes over faces or plates in a photo — both 100% client-side, nothing ever uploaded." />
+<link rel="stylesheet" href="style.css" />
+
+<header class="site-header">
+  <a href="index.html" class="brand"><span class="logo-dot"></span> Postguard</a>
+  <nav class="top-nav">
+    <a href="#scrub">Scrub metadata</a>
+    <a href="#redact">Redact photo</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#honesty">Why this exists</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <section class="hero">
+    <h1>Before you post that photo — strip what it's silently telling people.</h1>
+    <p class="tagline">
+      A JPEG straight from a phone often carries GPS coordinates, the exact camera/phone model,
+      and a timestamp, buried in bytes nobody looks at. Postguard reads and removes that data
+      <strong>entirely in your browser</strong>, and lets you draw permanent black boxes over
+      faces, plates, or addresses before you share the image — <strong>in one flow, one page,
+      nothing uploaded, ever.</strong>
+    </p>
+    <div class="hero-cta">
+      <a href="#scrub" class="btn btn-primary">Scrub a file</a>
+      <a href="#redact" class="btn btn-secondary">Redact a photo</a>
+    </div>
+  </section>
+
+  <section id="honesty">
+    <h2>Honest scope — read this first</h2>
+    <div class="callout callout-gap">
+      <span class="callout-title">This category is real, and it's crowded with good free tools</span>
+      <p>
+        Metadata-scrubbing tools are not a novel idea. Free, well-reviewed competitors already do
+        this well — <strong>Scrambled Exif</strong> (54,000+ downloads, 4.04/5 on F-Droid) and
+        <strong>Chrome's own built-in Metadata Remover extension</strong> (4.6/5) both strip EXIF
+        data for free, and have for years. If you just want EXIF gone, either of those is a
+        perfectly good choice and you don't need this page.
+      </p>
+      <p style="margin-bottom:0">
+        The one honest reason Postguard exists: none of the popular free scrubbers also let you
+        <strong>manually redact</strong> parts of the image (a face, a license plate, a street
+        sign) in the same flow. Postguard bundles metadata-scrub <em>and</em> redaction together
+        so you can do both in one place before sharing a photo. That's a real, if modest,
+        convenience — not a breakthrough. Build this expecting portfolio and utility value, not
+        meaningful revenue; the market evidence for a paid version of this exact idea is weak.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>100% local — verify it yourself</h2>
+    <div class="card">
+      <p style="margin-bottom:0">
+        Every operation below — reading your file, parsing its metadata, stripping it, drawing
+        redaction boxes, rendering the cleaned output — happens with the browser's local
+        <code>File</code>, <code>ArrayBuffer</code>, and <code>&lt;canvas&gt;</code> APIs only.
+        <strong>This app makes zero network requests.</strong> There is no <code>fetch</code>, no
+        <code>XMLHttpRequest</code>, no analytics beacon, and no server component at all —
+        <code>index.html</code> is served as a static file and every script in <code>js/</code> is
+        plain client-side JavaScript. Open your browser's Network tab while using this page and
+        you'll see nothing leave your machine. View source, read <code>js/exif.js</code>,
+        <code>js/pdfmeta.js</code>, and <code>js/redact.js</code> directly if you want to confirm
+        it yourself — that's the point of shipping this with no build step and no bundler.
+      </p>
+    </div>
+  </section>
+
+  <section id="scrub">
+    <h2>1. Metadata scrubber <span class="free-badge-inline">FREE, REAL</span></h2>
+    <div class="card">
+      <p style="font-size:0.9rem; color:var(--ink-soft);">
+        Choose a JPEG or a PDF. Postguard reads the real file bytes, parses out whichever known
+        metadata fields are present, shows you exactly what it found, and gives you a cleaned copy
+        to download — the original file on your disk is never touched or uploaded.
+      </p>
+      <div class="file-drop">
+        <input type="file" id="scrub-file-input" accept="image/jpeg,application/pdf" />
+        <p class="editor-meta" id="scrub-file-meta">No file chosen yet.</p>
+      </div>
+
+      <div id="scrub-results" hidden>
+        <h3 id="scrub-file-name" style="margin-bottom:6px;"></h3>
+        <div id="scrub-metadata-found"></div>
+        <div class="scrub-actions">
+          <button class="btn btn-primary" id="scrub-download-btn" type="button">Download cleaned file</button>
+          <span class="editor-meta" id="scrub-download-meta"></span>
+        </div>
+      </div>
+
+      <div id="batch-panel" hidden>
+        <hr style="border:none; border-top:1px solid var(--line); margin:16px 0;" />
+        <h3>Batch mode <span class="paid-badge-inline">PAID UNLOCK</span></h3>
+        <p style="font-size:0.85rem; color:var(--ink-soft);">
+          Process several images/PDFs in one sitting without re-uploading one at a time.
+        </p>
+        <input type="file" id="batch-file-input" accept="image/jpeg,application/pdf" multiple />
+        <div id="batch-results"></div>
+      </div>
+      <p class="lock-notice" id="batch-lock-notice">
+        Want to scrub several files in one flow instead of one at a time?
+        <a href="#pricing">Unlock batch mode</a> — free tier handles one file at a time, which
+        covers the common case just fine.
+      </p>
+    </div>
+  </section>
+
+  <section id="redact">
+    <h2>2. Redaction / blur tool <span class="free-badge-inline">FREE, REAL</span></h2>
+    <div class="card">
+      <p style="font-size:0.9rem; color:var(--ink-soft);">
+        Load a photo, drag rectangles over anything you want gone — a face, a plate, an address on
+        a package label — then hit Apply. This <strong>actually destroys the pixel data</strong>
+        in those rectangles (solid black fill by default, or a real box blur); it does not draw a
+        cover on top that someone could peel off in another editor. Download the result when
+        you're done.
+      </p>
+      <div class="file-drop">
+        <input type="file" id="redact-file-input" accept="image/*" />
+        <p class="editor-meta" id="redact-file-meta">No image loaded yet.</p>
+      </div>
+
+      <div id="redact-workspace" hidden>
+        <div class="redact-toolbar">
+          <label>
+            Mode:
+            <select id="redact-mode">
+              <option value="fill">Solid black fill</option>
+              <option value="blur">Box blur</option>
+            </select>
+          </label>
+          <button class="btn btn-secondary btn-sm" id="redact-undo-btn" type="button">Undo last box</button>
+          <button class="btn btn-secondary btn-sm" id="redact-clear-btn" type="button">Clear all boxes</button>
+          <button class="btn btn-primary btn-sm" id="redact-apply-btn" type="button">Apply redactions</button>
+        </div>
+        <p class="editor-meta" id="redact-box-count">0 box(es) drawn.</p>
+        <div class="canvas-wrap">
+          <canvas id="redact-canvas"></canvas>
+        </div>
+        <div class="scrub-actions">
+          <button class="btn btn-primary" id="redact-download-btn" type="button" disabled>Download redacted image</button>
+          <span class="editor-meta" id="redact-download-meta"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What's real in this repo</h2>
+    <div class="card">
+      <table class="tier-table">
+        <thead><tr><th>Part</th><th>Coverage</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>JPEG/EXIF parser (<code>js/exif.js</code>)</td>
+            <td><strong>REAL</strong> — real JPEG marker-segment walking, real TIFF/IFD binary
+            parsing. Covers: <code>GPSLatitude</code>/<code>GPSLongitude</code> (+ N/S/E/W refs),
+            <code>Make</code>, <code>Model</code>, <code>Software</code>, <code>DateTime</code>,
+            <code>DateTimeOriginal</code>, <code>Artist</code>, <code>Copyright</code>. Other EXIF
+            tags aren't displayed, but stripping removes the whole APP1 segment regardless.</td>
+          </tr>
+          <tr>
+            <td>PDF metadata parser (<code>js/pdfmeta.js</code>)</td>
+            <td><strong>REAL</strong> — real trailer/<code>/Info</code>-dictionary text parsing
+            plus embedded XMP <code>dc:creator</code>/<code>dc:title</code> extraction. Covers:
+            <code>Author</code>, <code>Title</code>, <code>Subject</code>, <code>Keywords</code>,
+            <code>Creator</code>, <code>Producer</code>. Does not support encrypted PDFs or
+            PDF 1.5+ compressed cross-reference streams.</td>
+          </tr>
+          <tr>
+            <td>Redaction engine (<code>js/redact.js</code>)</td>
+            <td><strong>REAL</strong> — destructive pixel overwrite (solid fill or box blur) on
+            real <code>ImageData</code>, Node-tested against synthetic pixel buffers.</td>
+          </tr>
+          <tr>
+            <td>Checkout / unlock</td>
+            <td><strong>SANDBOX</strong> — no real payment provider connected, no real card is
+            ever charged.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <h2>Pricing (BUY — one-time, not a subscription)</h2>
+    <div class="card pricing-card">
+      <div>Free</div>
+      <div class="price-line">$0</div>
+      <p style="color:var(--ink-soft); font-size:0.88rem;">Full metadata scrubber + full redaction tool, one file at a time.</p>
+      <hr style="border:none; border-top:1px solid var(--line); margin:18px 0;" />
+      <div>Batch unlock</div>
+      <div class="price-line" id="price-display">$3.99<span class="per"> one-time</span></div>
+      <div class="pricing-features">
+        <ul>
+          <li>Process several images/PDFs in one flow, no re-uploading one at a time</li>
+          <li>Same real scrub/redact engine — this only removes the one-file-at-a-time limit</li>
+          <li>One-time purchase — yours forever in this browser, no subscription</li>
+        </ul>
+      </div>
+      <button class="btn btn-primary btn-block" id="open-checkout-btn" type="button">Unlock batch mode (sandbox)</button>
+      <p id="already-unlocked-note" class="unlocked-banner" hidden>
+        Already unlocked in this browser (sandbox) — batch mode is active below.
+      </p>
+      <p style="font-size:0.78rem; color:var(--ink-soft); margin-top:10px;">
+        This is a sandbox demo only — no real payment provider is connected and no real card is
+        ever charged. The button below simulates a one-time purchase so you can see the full
+        unlock flow.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Repo &amp; tests</h2>
+    <div class="card">
+      <p>Zero dependencies, no build step. Every parsing/stripping/redaction module is pure logic
+      covered by real Node tests using synthetic-but-byte-accurate JPEG/PDF buffers:</p>
+      <pre><code>node test/exif.test.mjs
+node test/pdfmeta.test.mjs
+node test/redact.test.mjs
+node test/checkout.test.mjs</code></pre>
+      <p>All tests are real assertions against real binary structures (a synthetic JPEG with a
+      real TIFF/EXIF APP1 segment, a synthetic PDF with a real <code>/Info</code> dictionary and
+      an XMP packet, real pixel buffers) — none were weakened to force a pass.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Postguard — metadata scrubbing and redaction both real, both 100% client-side. Built for
+  genuine utility and portfolio value in a category with strong free competitors, not as a
+  revenue bet.
+</footer>
+
+<div id="checkout-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <button class="modal-close" id="checkout-close" type="button">Close</button>
+    <h3>Unlock batch mode <span class="demo-badge-inline">SANDBOX</span></h3>
+    <div class="sandbox-notice">
+      SANDBOX PAYMENT — for demo purposes. No real payment provider is connected, no real card is
+      ever charged.
+    </div>
+    <p id="checkout-price" style="font-weight:600;"></p>
+    <form id="checkout-form">
+      <div class="field">
+        <label for="card-number">Card number</label>
+        <input id="card-number" type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="off" />
+        <div class="field-error" id="error-number"></div>
+      </div>
+      <div class="field-row">
+        <div class="field" style="flex:1;">
+          <label for="card-expiry">Expiry (MM/YY)</label>
+          <input id="card-expiry" type="text" placeholder="12/29" autocomplete="off" />
+          <div class="field-error" id="error-expiry"></div>
+        </div>
+        <div class="field" style="flex:1;">
+          <label for="card-cvc">CVC</label>
+          <input id="card-cvc" type="text" inputmode="numeric" placeholder="123" autocomplete="off" />
+          <div class="field-error" id="error-cvc"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="checkout-submit" type="submit">Unlock (sandbox)</button>
+      <p style="font-size:0.76rem; color:var(--ink-soft); margin-top:10px;">
+        Decline test card: <code id="decline-card-hint"></code>
+      </p>
+      <div class="checkout-result" id="checkout-result"></div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>

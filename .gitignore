@@ -1,0 +1,5 @@
+# Local preview helper (not part of the deployed static site)
+server.mjs
+
+# OS / editor cruft
+.DS_Store
